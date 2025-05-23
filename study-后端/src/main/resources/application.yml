@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/xxt?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    hikari:
+      pool-name: HikariCP
+      maximum-pool-size: 10
+  mybatis-plus:
+    configuration:
+      map-underscore-to-camel-case: true
+  thymeleaf:
+    check-template-location: false
+
+#自定义的阿里云OSS配置信息
+aliyun:
+  oss:
+   endpoint: oss-cn-hangzhou.aliyuncs.com
+   accessKeyId: LTAI5tBHSR2H6sAe9k2QfFSp
+   accessKeySecret: Fxc3AUqbfQn3p57F7GPpqPMnBLkM90
+   bucketName: luxurylucky
+
+
