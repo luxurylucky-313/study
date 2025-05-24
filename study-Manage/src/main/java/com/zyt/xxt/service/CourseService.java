@@ -11,5 +11,8 @@ public interface CourseService {
     Course getCourseById(int id);
     boolean updateCourseImage(int id, String fileUrl);
     List<Course> searchCourses(String courseName, String className);
-    List<Course> getCoursesByTeacherId(int teacherId); // 新增方法
+    List<Course> searchCoursesByTeacherIdAndKeyword(int teacherId, String courseName, String className);
+    List<Course> getCoursesByTeacherId(int teacherId);
+    boolean updateCourseResource(int id, String resourceUrl);
+// 新增方法
 }

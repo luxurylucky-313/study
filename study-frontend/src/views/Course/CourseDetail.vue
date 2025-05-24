@@ -1,12 +1,14 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { ref, onMounted } from 'vue';
-import { courseApi } from '@/api/course_api'; // Import the API functions
+import { courseApi } from '@/api/course_api';
 
 const route = useRoute();
 const router = useRouter();
+const resourceFile = ref(null);
+const uploadProgress = ref(false);
 
-// State to hold course details
+// 课程详情状态
 const courseDescription = ref('');
 const courseName = ref('');
 const className = ref('');
@@ -14,84 +16,111 @@ const startTime = ref('');
 const endTime = ref('');
 const courseImage = ref('');
 const courseId = ref(null);
+const resourceUrl = ref('');
+const loading = ref(true);
+const error = ref('');
 
-// State to control modal visibility
+// 模态框状态
 const isModalVisible = ref(false);
-
-// State to hold uploaded image file
 const imageFile = ref(null);
-const imagePreview = ref(''); // For displaying the image preview
+const imagePreview = ref('');
 
-// Fetch course details
+// 获取课程详情
 const fetchCourseDetail = async () => {
   const id = route.params.id;
   courseId.value = id;
+  loading.value = true;
+  error.value = '';
+  
   try {
     const response = await courseApi.getCourseById(id);
-    const course = response.data;
-
-    // Assign course data to component variables
-    courseName.value = course.courseName;
-    className.value = course.className;
-    startTime.value = course.startTime;
-    endTime.value = course.endTime;
-    courseDescription.value = course.description;
-    courseImage.value = course.image;
-    console.log('Image path:', course.image);
-  } catch (error) {
-    console.error('Fetching course details failed:', error);
-  }
-};
-
-// Handle save operation in modal
-const saveCourse = async () => {
-  if (imageFile.value) {
-    // If an image is selected, upload it first
-    try {
-      const uploadResponse = await courseApi.uploadImage(courseId.value, imageFile.value);
-      courseImage.value = uploadResponse.data.imagePath; // Use the new image path from the response
-      console.log(uploadResponse.data); // Log the upload result
-    } catch (error) {
-      console.error('Image upload failed:', error);
-      alert('图片上传失败');
-      return;
+    console.log('课程详情响应:', response.data);
+    
+    if (response.data.code === 200 && response.data) {
+      const course = response.data.data;
+      courseName.value = course.courseName;
+      className.value = course.className;
+      startTime.value = formatDateTime(course.startTime);
+      endTime.value = formatDateTime(course.endTime);
+      courseDescription.value = course.description;
+      courseImage.value = course.image || '/src/assets/images/course1.jpg';
+      resourceUrl.value = course.resourceUrl || '无资源链接';
+    } else {
+      error.value = '获取课程详情失败';
+      console.error('获取课程详情失败:', response);
     }
-  }
-
-  // Prepare updated course data
-  const updatedCourse = {
-    id: courseId.value,
-    courseName: courseName.value,
-    className: className.value,
-    startTime: startTime.value,
-    endTime: endTime.value,
-    description: courseDescription.value,
-    image: courseImage.value, // Use the updated image path
-  };
-
-  try {
-    // Update course information using the API
-    await courseApi.updateCourse(courseId.value, updatedCourse);
-    alert('Course updated successfully!');
-    isModalVisible.value = false; // Close the modal
-  } catch (error) {
-    console.error('Error updating course:', error);
-    alert('Failed to update course.');
+  } catch (err) {
+    error.value = '获取课程详情出错';
+    console.error('获取课程详情异常:', err);
+  } finally {
+    loading.value = false;
   }
 };
 
-// Go back to the Home page
+// 时间格式化函数
+const formatDateTime = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  return date.toISOString().slice(0, 16);
+};
+
+const formatDisplayTime = (dateTimeString) => {
+  if (!dateTimeString) return '未设置';
+  return new Date(dateTimeString).toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// 保存课程信息
+const saveCourse = async () => {
+  try {
+    if (imageFile.value) {
+      const uploadResponse = await courseApi.uploadImage(courseId.value, imageFile.value);
+      if (uploadResponse.code === 200) {
+        courseImage.value = uploadResponse.data.imagePath;
+      } else {
+        throw new Error('图片上传失败');
+      }
+    }
+
+    const updatedCourse = {
+      id: courseId.value,
+      courseName: courseName.value,
+      className: className.value,
+      startTime: startTime.value,
+      endTime: endTime.value,
+      description: courseDescription.value,
+      image: courseImage.value,
+    };
+    console.log('更新课程信息:', updatedCourse);
+    const response = await courseApi.updateCourse(courseId.value, updatedCourse);
+    if (response.data.code === 200) {
+      alert('课程更新成功！');
+      isModalVisible.value = false;
+      fetchCourseDetail(); // 重新获取课程信息
+    } else {
+      throw new Error(response.message || '更新失败');
+    }
+  } catch (error) {
+    console.error('更新课程失败:', error);
+    alert(error.message || '更新课程失败，请重试');
+  }
+};
+
+// 返回首页
 const goBack = () => {
   router.push({ name: 'Home' });
 };
 
-// Image upload preview handler
+// 处理图片上传
 const handleImageUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     imageFile.value = file;
-
-    // Create a preview of the selected image
     const reader = new FileReader();
     reader.onload = (e) => {
       imagePreview.value = e.target.result;
@@ -100,77 +129,174 @@ const handleImageUpload = (event) => {
   }
 };
 
+// 图片加载错误处理
+const handleImageError = (e) => {
+  e.target.src = '/src/assets/images/course1.jpg';
+};
+
+// 页面加载时获取课程详情
 onMounted(() => {
   fetchCourseDetail();
 });
+
+// 处理资源文件上传
+const handleResourceUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // 文件类型检查
+  const allowedTypes = [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+    'application/pdf', // .pdf
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    ElMessage.error('只支持 Word、PPT、PDF、Excel 等办公文件格式');
+    return;
+  }
+
+  // 文件大小检查（50MB）
+  if (file.size > 50 * 1024 * 1024) {
+    ElMessage.error('文件大小不能超过 50MB');
+    return;
+  }
+
+  try {
+    uploadProgress.value = true;
+    const response = await courseApi.uploadResource(courseId.value, file);
+    
+    if (response.data.code === 200) {
+      ElMessage.success(response.data.message || '资源上传成功');
+      await fetchCourseDetail(); // 重新获取课程信息以更新资源链接
+    } else {
+      throw new Error(response.data.message || '上传失败');
+    }
+  } catch (error) {
+    console.error('上传资源失败:', error);
+    ElMessage.error(error.message || '上传资源失败');
+  } finally {
+    uploadProgress.value = false;
+    // 清空文件输入框
+    event.target.value = '';
+  }
+};
 </script>
 
 <template>
   <div class="course-detail">
-    <header class="header">
-      <h2>{{ courseName }}</h2>
-      <div class="header-buttons">
-        <button @click="goBack" class="back-btn">返回</button>
-        <button @click="isModalVisible = true" class="edit-btn">修改</button>
-      </div>
-    </header>
-
-    <div class="course-info">
-      <div class="image-container">
-        <img :src="courseImage" alt="课程封面" class="course-image" />
-      </div>
-      <div class="info-container">
-        <h3 class="section-title">课程介绍</h3>
-        <p class="description">{{ courseDescription }}</p>
-        <div class="course-details">
-          <p><strong>班级：</strong>{{ className }}</p>
-          <p><strong>开始时间：</strong>{{ startTime }}</p>
-          <p><strong>结束时间：</strong>{{ endTime }}</p>
-        </div>
-      </div>
+    <div v-if="loading" class="loading">
+      加载中...
     </div>
 
-    <!-- Modal for editing course details -->
-    <div v-if="isModalVisible" class="modal-overlay">
-      <div class="modal">
-        <h3 class="modal-title">编辑课程</h3>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="courseName">课程名称：</label>
-            <input v-model="courseName" id="courseName" type="text" />
+    <div v-else-if="error" class="error-message">
+      <p>{{ error }}</p>
+      <button @click="fetchCourseDetail" class="retry-btn">重试</button>
+    </div>
+
+    <template v-else>
+      <header class="header">
+        <h2>{{ courseName }}</h2>
+        <div class="header-buttons">
+          <button @click="goBack" class="back-btn">返回</button>
+          <button @click="isModalVisible = true" class="edit-btn">修改</button>
+        </div>
+      </header>
+
+      <div class="course-info">
+        <div class="image-container">
+          <img 
+            :src="courseImage" 
+            :alt="courseName"
+            class="course-image"
+            @error="handleImageError"
+          />
+        </div>
+        
+        <div class="info-container">
+          <h3 class="section-title">课程介绍</h3>
+          <p class="description">{{ courseDescription || '暂无介绍' }}</p>
+          <div class="course-details">
+            <p><strong>班级：</strong>{{ className }}</p>
+            <p><strong>开始时间：</strong>{{ formatDisplayTime(startTime) }}</p>
+            <p><strong>结束时间：</strong>{{ formatDisplayTime(endTime) }}</p>
+            <p><strong>课程资源：</strong>{{ resourceUrl }}</p>
           </div>
-          <div class="form-group">
-            <label for="className">班级：</label>
-            <input v-model="className" id="className" type="text" />
+        </div>
+        <div class="resource-section">
+          <h3 class="section-title">课程资源</h3>
+          <div class="resource-upload">
+            <input 
+              type="file"
+              accept=".docx,.pptx,.pdf,.xlsx"
+              @change="handleResourceUpload"
+              :disabled="uploadProgress"
+              class="resource-input"
+              id="resource-upload"
+            />
+            <label for="resource-upload" class="upload-label">
+              {{ uploadProgress ? '上传中...' : '选择文件' }}
+            </label>
           </div>
-          <div class="form-group">
-            <label for="startTime">开始时间：</label>
-            <input v-model="startTime" id="startTime" type="datetime-local" />
+          
+          <!-- 显示当前资源链接 -->
+          <div v-if="course?.resourceUrl" class="resource-link">
+            <a :href="course.resourceUrl" target="_blank" class="download-link">
+              下载课程资源
+            </a>
           </div>
-          <div class="form-group">
-            <label for="endTime">结束时间：</label>
-            <input v-model="endTime" id="endTime" type="datetime-local" />
-          </div>
-          <div class="form-group">
-            <label for="courseDescription">课程介绍：</label>
-            <textarea v-model="courseDescription" id="courseDescription"></textarea>
-          </div>
-          <div class="form-group image-upload">
-            <label for="courseImage">课程封面图片：</label>
-            <div class="upload-container">
-              <img v-if="imagePreview" :src="imagePreview" alt="预览" class="image-preview" />
-              <input type="file" id="courseImage" @change="handleImageUpload" />
-              <span v-if="!imagePreview" class="upload-text">选择图片</span>
+        </div>        
+      </div>
+
+      <!-- 编辑模态框 -->
+      <div v-if="isModalVisible" class="modal-overlay" @click.self="isModalVisible = false">
+        <div class="modal">
+          <h3 class="modal-title">编辑课程信息</h3>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>课程名称</label>
+              <input type="text" v-model="courseName" />
+            </div>
+            <div class="form-group">
+              <label>班级</label>
+              <input type="text" v-model="className" />
+            </div>
+            <div class="form-group">
+              <label>开始时间</label>
+              <input type="datetime-local" v-model="startTime" />
+            </div>
+            <div class="form-group">
+              <label>结束时间</label>
+              <input type="datetime-local" v-model="endTime" />
+            </div>
+            <div class="form-group">
+              <label>课程介绍</label>
+              <textarea v-model="courseDescription"></textarea>
+            </div>
+            <div class="image-upload">
+              <label>课程图片</label>
+              <div class="upload-container">
+                <img 
+                  :src="imagePreview || courseImage" 
+                  class="image-preview"
+                  @error="handleImageError"
+                />
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  @change="handleImageUpload"
+                />
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="modal-actions">
-          <button @click="saveCourse" class="save-btn">保存</button>
-          <button @click="isModalVisible = false" class="cancel-btn">取消</button>
+          <div class="modal-actions">
+            <button @click="saveCourse" class="save-btn">保存</button>
+            <button @click="isModalVisible = false" class="cancel-btn">取消</button>
+          </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -394,5 +520,58 @@ textarea {
 
 .cancel-btn:hover {
   background-color: #f0f0f0;
+}
+.resource-section {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.resource-upload {
+  margin: 15px 0;
+}
+
+.resource-input {
+  display: none;
+}
+
+.upload-label {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #66b1ff;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-label:hover {
+  background-color: #4a91d1;
+}
+
+.resource-link {
+  margin-top: 15px;
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.download-link:hover {
+  background-color: #45a049;
+}
+
+/* 禁用状态样式 */
+.upload-label[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>

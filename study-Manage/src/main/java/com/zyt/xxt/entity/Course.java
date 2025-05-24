@@ -18,4 +18,5 @@ public class Course {
     private Date endTime;
     private String image;
     private String description;
+    private String resourceUrl;
 }

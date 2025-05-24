@@ -81,14 +81,10 @@ const handleLogin = async () => {
 
   try {
     const response = await teacherApi.login(username.value, password.value);
-    // 新接口：code=200，data为token
+    console.log('登录响应:', response); // 调试日志
     if (response.code === 200 && response.data) {
       const token = response.data;
       localStorage.setItem('userToken', token);
-
-      // 假设后端有通过token获取当前用户信息的接口
-      // 这里需要先解析token获取id，或者后端提供 /teacher/me 之类的接口
-      // 这里假设用户名唯一，用用户名查
       const userInfoResp = await teacherApi.searchTeachers(username.value);
       if (userInfoResp.code === 200 && userInfoResp.data && userInfoResp.data.length > 0) {
         const userInfo = userInfoResp.data[0];

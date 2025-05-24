@@ -69,4 +69,30 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         }
         return list(queryWrapper);
     }
+    @Override
+    public List<Course> searchCoursesByTeacherIdAndKeyword(int teacherId, String courseName, String className) {
+        QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("teacher_id", teacherId);
+
+        if (courseName != null && !courseName.trim().isEmpty()) {
+            queryWrapper.like("course_name", courseName);
+        }
+        if (className != null && !className.trim().isEmpty()) {
+            queryWrapper.like("class_name", className);
+        }
+
+        return list(queryWrapper);
+    }
+
+    @Override
+    public boolean updateCourseResource(int id, String resourceUrl) {
+        Course course = getById(id); // 获取原始课程对象
+        if (course == null) return false;
+
+        course.setResourceUrl(resourceUrl); // 设置资源URL
+
+        return updateById(course); // 使用MyBatis-Plus更新
+    }
+
+
 }

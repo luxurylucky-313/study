@@ -1,47 +1,55 @@
-import axios from 'axios';
+import request from '../utils/request';
 
-const API_BASE_URL = "http://localhost:8080/course";
-
-const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-});
-
-axiosInstance.interceptors.response.use(
-  (response) => {
-    return response.data;
-  },
-  (error) => {
-    console.error('API 请求失败:', error);
-    return Promise.reject(error);
-  }
-);
+const API_PREFIX = '/course';
 
 export const courseApi = {
-  getAllCourses: () => axiosInstance.get('/list'),
+  // 获取所有课程列表
+  getAllCourses: () => request.get(`${API_PREFIX}/list`),
 
-  addCourse: (course) => axiosInstance.post('/add', course),
+  // 添加新课程
+  addCourse: (course) => request.post(`${API_PREFIX}/add`, course),
 
-  deleteCourse: (id) => axiosInstance.delete(`/delete/${id}`),
+  // 删除课程
+  deleteCourse: (id) => request.delete(`${API_PREFIX}/delete/${id}`),
 
-  updateCourse: (id, course) => axiosInstance.put(`/update/${id}`, course),
+  // 更新课程信息
+ updateCourse: (id, course) => request.put(`${API_PREFIX}/update/${id}`, course),
 
-  getCourseById: (id) => axiosInstance.get(`/get/${id}`),
+  // 获取当前教师的所有课程
+  getMyCourses: () => request.get(`${API_PREFIX}/my-courses`),
 
+  // 根据ID获取课程详情
+  getCourseById: (id) => request.get(`${API_PREFIX}/get/${id}`),
+
+  // 上传课程图片
   uploadImage: (id, file) => {
-    let formData = new FormData();
+    const formData = new FormData();
     formData.append('file', file);
-    return axiosInstance.post(`/${id}/upload-image`, formData, {
+    return request.post(`${API_PREFIX}/${id}/upload-image`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     });
   },
 
-  searchCourses: (courseName, className) => {
-    const params = {};
-    if (courseName) params.course_name = courseName;
-    if (className) params.class_name = className;
+  // 搜索课程
+  searchCourses: (params) => {
+    const searchParams = {
+      course_name: params?.courseName || '',
+      class_name: params?.className || '',
+      all: params?.all ?? false
+    };
+    
+    return request.get(`${API_PREFIX}/search`, { params: searchParams });
+  },
 
-    return axiosInstance.get('/search', { params });
+  uploadResource: (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return request.post(`${API_PREFIX}/${id}/upload-resource`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
   },
 };

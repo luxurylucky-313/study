@@ -128,19 +128,63 @@ public class CourseController {
         }
     }
 
+    // 上传课程资源文件（如 PPT、Word）
+    @PostMapping("/{id}/upload-resource")
+    public ResponseResult<String> uploadResource(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            // 获取文件名
+            String fileName = file.getOriginalFilename();
+            if (fileName == null || fileName.isEmpty()) {
+                return ResponseResult.error("无效的文件名");
+            }
+
+            // 上传文件到 OSS
+            ossService.uploadFile(fileName, file.getInputStream());
+            // 获取上传后的文件 URL
+            String fileUrl = ossService.getFileUrl(fileName);
+
+            // 更新课程的 resourceUrl 字段
+            boolean result = courseService.updateCourseResource(Math.toIntExact(id), fileUrl);
+            if (result) {
+                return ResponseResult.success("资源上传成功");
+            } else {
+                return ResponseResult.error("资源上传失败");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseResult.error("文件上传失败");
+        }
+    }
+
+
     // 根据课程名称和班级名称查询
     @GetMapping("/search")
     public ResponseResult<List<Course>> searchCourses(
+            HttpServletRequest request,
             @RequestParam(required = false) String course_name,
-            @RequestParam(required = false) String class_name) {
-        if (course_name == null || course_name.isEmpty()) {
-            course_name = ""; // 或者设置为 null，表示不限制课程名称
-        }
-        if (class_name == null || class_name.isEmpty()) {
-            class_name = ""; // 同样可以设置为 null，表示不限制班级名称
+            @RequestParam(required = false) String class_name,
+            @RequestParam(defaultValue = "false") boolean all) {
+
+        Claims claims = (Claims) request.getAttribute("claims");
+        String username = claims.getSubject();
+
+        Teacher teacher = teacherService.findByUsername(username);
+        List<Course> courses;
+
+        if (all && teacher != null) {
+            // 查询所有课程
+            courses = courseService.searchCourses(course_name, class_name);
+        } else if (teacher != null) {
+            // 只查当前教师的课程
+            courses = courseService.searchCoursesByTeacherIdAndKeyword(teacher.getId(), course_name, class_name);
+        } else {
+            // 非教师用户或其他情况，默认不返回数据或抛出异常
+            return ResponseResult.error("无权访问");
         }
 
-        List<Course> courses = courseService.searchCourses(course_name, class_name);
-        return ResponseResult.success(courses); // 即使没有找到课程，也返回空列表
+        return ResponseResult.success(courses);
     }
+
 }

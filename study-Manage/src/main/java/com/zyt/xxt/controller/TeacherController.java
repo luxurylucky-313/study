@@ -118,10 +118,6 @@ public class TeacherController {
     public ResponseResult<List<Teacher>> searchTeachers(
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String gender) {
-        if ("OPTIONS".equalsIgnoreCase(((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getMethod())) {
-            // 修改为符合 ResponseResult 的返回格式
-            return ResponseResult.success(Collections.emptyList());
-        }
         List<Teacher> teachers = teacherService.searchTeachers(username, gender);
         return ResponseResult.success(teachers);
     }
