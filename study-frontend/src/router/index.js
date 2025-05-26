@@ -33,9 +33,9 @@ const routes = [
     component: CourseDetail
   },
   {
-    path: '/data',
-    name: 'Data',
-    component: () => import('@/views/Data/DataView.vue')
+    path: '/AI',
+    name: 'AI',
+    component: () => import('@/views/AI/AiView.vue')
   },
   {
     path: '/news',

@@ -45,10 +45,10 @@
                 <span>作业</span>
               </li>
             </router-link>
-            <router-link to="/data">
+            <router-link to="/AI">
               <li>
                 <i class="fa-solid fa-chart-line"></i>
-                <span>学生数据分析</span>
+                <span>AI智能问答</span>
               </li>
             </router-link>
             <router-link to="/news">

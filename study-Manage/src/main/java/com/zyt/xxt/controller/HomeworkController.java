@@ -1,5 +1,6 @@
 package com.zyt.xxt.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zyt.xxt.common.ResponseResult;
 import com.zyt.xxt.entity.Homework;
 import com.zyt.xxt.service.HomeworkService;
@@ -17,52 +18,59 @@ public class HomeworkController {
 
     // 获取所有作业
     @GetMapping("/all")
-    public ResponseResult<List<Homework>> getAllHomework() {
-        List<Homework> homeworkList = homeworkService.getAllHomework();
-        return ResponseResult.success(homeworkList);
+    public List<Homework> getAllHomework() {
+        return homeworkService.getAllHomework();
     }
 
-    // 根据ID获取单个作业
+    // 根据作业ID获取作业信息
     @GetMapping("/{id}")
-    public ResponseResult<Homework> getHomeworkById(@PathVariable("id") Integer id) {
-        Homework homework = homeworkService.getHomeworkById(id);
-        if (homework != null) {
-            return ResponseResult.success(homework);
-        } else {
-            return ResponseResult.error("未找到该作业");
-        }
+    public Homework getHomeworkById(@PathVariable Integer id) {
+        return homeworkService.getHomeworkById(id);
     }
 
-    // 添加新作业
-    @PostMapping("/add")
-    public ResponseResult<String> addHomework(@RequestBody Homework homework) {
-        boolean success = homeworkService.addHomework(homework);
-        if (success) {
-            return ResponseResult.success("作业添加成功");
-        } else {
-            return ResponseResult.error("作业添加失败");
-        }
+
+
+    // 根据教师ID查询作业
+    @GetMapping("/teacher/{teacherId}")
+    public List<Homework> getHomeworkByTeacherId(@PathVariable Integer teacherId) {
+        return homeworkService.getHomeworkByTeacherId(teacherId);
     }
 
-    // 更新作业
-    @PutMapping("/update")
-    public ResponseResult<String> updateHomework(@RequestBody Homework homework) {
-        boolean success = homeworkService.updateHomeworkById(homework);
-        if (success) {
-            return ResponseResult.success("作业更新成功");
-        } else {
-            return ResponseResult.error("作业更新失败");
-        }
+    // 根据课程ID查询作业
+    @GetMapping("/course/{courseId}")
+    public List<Homework> getHomeworkByCourseId(@PathVariable Integer courseId) {
+        return homeworkService.getHomeworkByCourseId(courseId);
+    }
+
+    // 添加作业
+    @PostMapping("add")
+    public boolean addHomework(@RequestBody Homework homework) {
+        return homeworkService.addHomework(homework);
+    }
+
+    // 更新作业信息
+    @PutMapping("update")
+    public boolean updateHomework(@RequestBody Homework homework) {
+        return homeworkService.updateHomeworkById(homework);
     }
 
     // 删除作业
     @DeleteMapping("/delete/{id}")
-    public ResponseResult<String> deleteHomework(@PathVariable("id") Integer id) {
-        boolean success = homeworkService.deleteHomework(id);
-        if (success) {
-            return ResponseResult.success("作业删除成功");
-        } else {
-            return ResponseResult.error("作业删除失败");
-        }
+    public boolean deleteHomework(@PathVariable Integer id) {
+        return homeworkService.deleteHomework(id);
     }
+
+    @GetMapping("/filter-by-teacher")
+    public ResponseResult<Page<Homework>> getHomeworkByTeacherIdWithFilter(
+            @RequestParam(required = false) Integer teacherId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Integer courseId,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize) {
+
+        Page<Homework> homeworkPage = homeworkService.getHomeworkByTeacherIdWithFilter(teacherId, title, courseId, status, pageNum, pageSize);
+        return ResponseResult.success(homeworkPage);
+    }
+
 }

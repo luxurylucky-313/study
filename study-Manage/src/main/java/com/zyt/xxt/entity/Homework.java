@@ -7,12 +7,17 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@TableName("Homework")
+@TableName("homework")
 public class Homework {
     @TableId
     private Integer id;
-    private String className;
-    private String courseName;
+    private Integer teacherId;
+    private Integer courseId;
+    private String title;
+    private String description;
     private Date startTime;
     private Date endTime;
+    private Integer status; // 0:未发布,1:已发布
+    private Date createdAt;
+    private Date updatedAt;
 }

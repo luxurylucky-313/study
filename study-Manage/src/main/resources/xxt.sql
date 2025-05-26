@@ -11,7 +11,7 @@
  Target Server Version : 80027 (8.0.27)
  File Encoding         : 65001
 
- Date: 24/05/2025 14:32:15
+ Date: 26/05/2025 18:34:39
 */
 
 SET NAMES utf8mb4;
@@ -59,31 +59,67 @@ INSERT INTO `course` VALUES (15, 0, '计算机图形学', '计算机科学2025�
 DROP TABLE IF EXISTS `homework`;
 CREATE TABLE `homework`  (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '作业ID',
-  `class_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '班级名称',
-  `course_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '课程名称',
+  `teacher_id` int NOT NULL COMMENT '教师ID',
+  `course_id` int NOT NULL COMMENT '关联的课程ID',
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '作业标题',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '作业描述',
   `start_time` datetime NOT NULL COMMENT '开始时间',
   `end_time` datetime NOT NULL COMMENT '结束时间',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '作业信息表' ROW_FORMAT = DYNAMIC;
+  `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态(0:未发布,1:已发布)',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_teacher_id`(`teacher_id` ASC) USING BTREE,
+  INDEX `idx_course_id`(`course_id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '作业信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of homework
 -- ----------------------------
-INSERT INTO `homework` VALUES (1, '计算机科学2025级1班', '计算机科学导论', '2025-04-01 10:00:00', '2025-04-15 23:59:59');
-INSERT INTO `homework` VALUES (2, '计算机科学2025级2班', '数据结构与算法', '2025-04-02 10:00:00', '2025-04-16 23:59:59');
-INSERT INTO `homework` VALUES (3, '计算机科学2025级3班', '操作系统原理', '2025-04-03 10:00:00', '2025-04-17 23:59:59');
-INSERT INTO `homework` VALUES (4, '计算机科学2025级4班', '数据库系统概论', '2025-04-04 10:00:00', '2025-04-18 23:59:59');
-INSERT INTO `homework` VALUES (5, '计算机科学2025级5班', '软件工程基础', '2025-04-05 10:00:00', '2025-04-19 23:59:59');
-INSERT INTO `homework` VALUES (6, '计算机科学2025级6班', '人工智能基础', '2025-04-06 10:00:00', '2025-04-20 23:59:59');
-INSERT INTO `homework` VALUES (7, '计算机科学2025级7班', '计算机网络', '2025-04-07 10:00:00', '2025-04-21 23:59:59');
-INSERT INTO `homework` VALUES (8, '计算机科学2025级8班', '编译原理', '2025-04-08 10:00:00', '2025-04-22 23:59:59');
-INSERT INTO `homework` VALUES (9, '计算机科学2025级9班', '信息安全', '2025-04-09 10:00:00', '2025-04-23 23:59:59');
-INSERT INTO `homework` VALUES (10, '计算机科学2025级10班', 'Web开发技术', '2025-04-10 10:00:00', '2025-04-24 23:59:59');
-INSERT INTO `homework` VALUES (11, '计算机科学2025级11班', '移动应用开发', '2025-04-11 10:00:00', '2025-04-25 23:59:59');
-INSERT INTO `homework` VALUES (12, '计算机科学2025级12班', '云计算与大数据', '2025-04-12 10:00:00', '2025-04-26 23:59:59');
-INSERT INTO `homework` VALUES (13, '计算机科学2025级13班', '游戏开发基础', '2025-04-13 10:00:00', '2025-04-27 23:59:59');
-INSERT INTO `homework` VALUES (14, '计算机科学2025级14班', '人机交互', '2025-04-14 10:00:00', '2025-04-28 23:59:59');
-INSERT INTO `homework` VALUES (15, '计算机科学2025级15班', '计算机图形学', '2025-04-15 10:00:00', '2025-04-29 23:59:59');
+INSERT INTO `homework` VALUES (1, 1, 4, '作业1：基础练习', '完成课本第1章练习题1-10', '2025-06-01 08:00:00', '2025-06-10 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (2, 1, 1, '作业2：进阶练习', '完成练习册第2章习题A部分', '2025-06-11 08:00:00', '2025-06-20 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (3, 1, 5, '作业3：综合测试', '在线平台完成10道题目', '2025-06-21 08:00:00', '2025-06-30 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (4, 1, 5, '作业4：复习与总结', '整理前三个章节知识点并提交笔记', '2025-07-01 08:00:00', '2025-07-10 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (5, 1, 5, '作业5：应用实践', '完成实际问题建模练习', '2025-07-11 08:00:00', '2025-07-20 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (6, 1, 1, '作业6：编程入门', '编写简单程序实现功能', '2025-07-21 08:00:00', '2025-07-30 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (7, 1, 5, '作业7：项目设计', '设计一个小项目方案并提交文档', '2025-08-01 08:00:00', '2025-08-10 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (8, 1, 1, '作业8：代码调试', '下载模板代码并修复错误', '2025-08-11 08:00:00', '2025-08-20 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (9, 1, 5, '作业9：算法练习', '完成5个排序算法实现', '2025-08-21 08:00:00', '2025-08-30 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (10, 1, 1, '作业10：期末考核', '独立完成最终项目并提交成果', '2025-08-31 08:00:00', '2025-09-10 23:59:59', 1, '2025-05-26 14:27:33', '2025-05-26 14:27:33');
+INSERT INTO `homework` VALUES (11, 1, 5, '作业1：基础练习', '完成课本第1章练习题1-10', '2025-06-01 08:00:00', '2025-06-10 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (12, 1, 1, '作业2：进阶练习', '完成练习册第2章习题A部分', '2025-06-11 08:00:00', '2025-06-20 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (13, 1, 1, '作业3：综合测试', '在线平台完成10道题目', '2025-06-21 08:00:00', '2025-06-30 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (14, 1, 1, '作业4：复习与总结', '整理前三个章节知识点并提交笔记', '2025-07-01 08:00:00', '2025-07-10 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (15, 1, 5, '作业5：应用实践', '完成实际问题建模练习', '2025-07-11 08:00:00', '2025-07-20 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (16, 1, 4, '作业6：编程入门', '编写简单程序实现功能', '2025-07-21 08:00:00', '2025-07-30 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (17, 1, 4, '作业7：项目设计', '设计一个小项目方案并提交文档', '2025-08-01 08:00:00', '2025-08-10 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (18, 1, 2, '作业8：代码调试', '下载模板代码并修复错误', '2025-08-11 08:00:00', '2025-08-20 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (19, 1, 3, '作业9：算法练习', '完成5个排序算法实现', '2025-08-21 08:00:00', '2025-08-30 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+INSERT INTO `homework` VALUES (20, 1, 3, '作业10：期末考核', '独立完成最终项目并提交成果', '2025-08-31 08:00:00', '2025-09-10 23:59:59', 1, '2025-05-26 14:27:43', '2025-05-26 14:27:43');
+
+-- ----------------------------
+-- Table structure for homework_question
+-- ----------------------------
+DROP TABLE IF EXISTS `homework_question`;
+CREATE TABLE `homework_question`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '题目ID',
+  `homework_id` int NOT NULL COMMENT '关联的作业ID',
+  `type` tinyint NOT NULL COMMENT '题目类型(1:选择题,2:判断题,3:简答题)',
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '题目内容',
+  `options` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '选择题选项(JSON格式)',
+  `answer` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '参考答案',
+  `score` int NOT NULL DEFAULT 0 COMMENT '分值',
+  `sequence` int NOT NULL DEFAULT 0 COMMENT '题目顺序',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_homework_id`(`homework_id` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1805533186 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '作业题目表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of homework_question
+-- ----------------------------
+INSERT INTO `homework_question` VALUES (-1835122686, 1, 1, '测试', '{\"A\":\"1\",\"B\":\"2\",\"C\":\"3\",\"D\":\"4\"}', 'A', 5, 1, '2025-05-26 17:06:29', '2025-05-26 17:06:29');
 
 -- ----------------------------
 -- Table structure for teacher
