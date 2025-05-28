@@ -221,7 +221,14 @@ const handleResourceUpload = async (event) => {
             <p><strong>班级：</strong>{{ className }}</p>
             <p><strong>开始时间：</strong>{{ formatDisplayTime(startTime) }}</p>
             <p><strong>结束时间：</strong>{{ formatDisplayTime(endTime) }}</p>
-            <p><strong>课程资源：</strong>{{ resourceUrl }}</p>
+            <p><strong>课程资源：</strong>
+              <template v-if="resourceUrl && resourceUrl !== '无资源链接'">
+                <a :href="resourceUrl" target="_blank" style="color: #333; text-decoration: underline; margin-left: 4px; font-size: 1em; background: none; padding: 0; border: none; display: inline; cursor: pointer;">
+                  {{ decodeURIComponent(resourceUrl.split('/').pop()) }}
+                </a>
+              </template>
+              <template v-else>无</template>
+            </p>
           </div>
         </div>
         <div class="resource-section">
@@ -240,12 +247,7 @@ const handleResourceUpload = async (event) => {
             </label>
           </div>
           
-          <!-- 显示当前资源链接 -->
-          <div v-if="course?.resourceUrl" class="resource-link">
-            <a :href="course.resourceUrl" target="_blank" class="download-link">
-              下载课程资源
-            </a>
-          </div>
+          
         </div>        
       </div>
 
@@ -346,12 +348,12 @@ button {
 }
 
 .edit-btn {
-  background-color: #66b1ff;
+  background-color:  #bfdbea;
   color: #ffffff;
 }
 
 .edit-btn:hover {
-  background-color: #4a91d1;
+  background-color:#d9eaf3;
 }
 
 .course-info {
@@ -408,7 +410,7 @@ button {
 
 .modal {
   background: white;
-  padding: 30px;
+  padding: 20px;
   border-radius: 8px;
   width: 80%;
   max-width: 600px;
@@ -430,9 +432,10 @@ button {
 }
 
 .modal-title {
-  font-size: 1.8rem;
+  font-size: 24px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .modal-body {
@@ -440,7 +443,7 @@ button {
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 8px;
 }
 
 label {
@@ -478,8 +481,8 @@ textarea {
 }
 
 .image-preview {
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   object-fit: cover;
   border-radius: 8px;
 }
@@ -496,7 +499,7 @@ textarea {
 
 .save-btn,
 .cancel-btn {
-  padding: 12px 24px;
+  padding: 10px 24px;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
@@ -504,7 +507,7 @@ textarea {
 }
 
 .save-btn {
-  background-color: #66b1ff;
+  background-color:  #bfdbea;
   color: white;
 }
 
@@ -539,7 +542,7 @@ textarea {
 .upload-label {
   display: inline-block;
   padding: 10px 20px;
-  background-color: #66b1ff;
+  background-color:  #bfdbea;
   color: white;
   border-radius: 6px;
   cursor: pointer;

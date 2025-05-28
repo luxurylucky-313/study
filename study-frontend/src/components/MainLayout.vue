@@ -79,40 +79,44 @@
     </div>
 
     <!-- 浮窗 -->
-    <div v-if="activeTool" class="overlay">
+    <div v-if="activeTool" class="overlay" ref="overlayRef"
+      @mousedown="activeTool.name === '投屏' && screenShareState.selecting ? onOverlayMouseDown($event) : null"
+      style="user-select:none;">
       <div class="tool-popup">
         <div class="tool-popup-header">
           <h3>{{ activeTool.name }}</h3>
-          <button class="close-button" @click="closeTool">×</button>
+          <button class="close-button" @click="() => { closeTool(); resetScreenShare(); }">×</button>
         </div>
         <div class="tool-popup-body">
-          <!-- 根据工具名称显示不同的内容 -->
-          <div v-if="activeTool.name === '发签到'">
-            <div class="form-group">
-              <label for="location"><i class="fa-solid fa-map-marker-alt"></i> 定位:</label>
-              <input type="text" id="location" placeholder="输入定位">
-            </div>
-            <div class="form-group">
-              <label for="class-members"><i class="fa-solid fa-users"></i> 选择班级:</label>
-              <select id="class-members" multiple>
-                <option>22计算机1，2</option>
-                <option>22电商1，2</option>
-                <option>22信管1，2</option>
-                <option>22互金1，2</option>
-                <option>23计算机1，2</option>
-                <option>24计算机1，2</option>
-              </select>
-            </div>
-            <button class="action-button" @click="confirmCheckIn">确定</button>
-          </div>
           <div v-if="activeTool.name === '投屏'">
             <i class="fa-solid fa-tv fa-3x tool-icon"></i>
-            <button class="action-button" @click="startScreenShare">开启投屏</button>
+            <div v-if="!screenShareState.region">
+              <button class="action-button" @click="startSelectRegion" :disabled="screenShareState.selecting">选择区域</button>
+              <span v-if="screenShareState.selecting" style="color:#888;">请在页面上拖动鼠标选择区域</span>
+            </div>
+            <div v-else>
+              <div style="margin-bottom:10px; color:#4e6f82;">
+                已选择区域：{{ screenShareState.region.width }} × {{ screenShareState.region.height }}
+              </div>
+              <button class="action-button" @click="startScreenShare">开启投屏</button>
+              <button class="action-button" style="margin-left:10px;background:#eee;color:#666;" @click="resetScreenShare">重选区域</button>
+            </div>
+            <!-- 区域选择高亮框 -->
+            <div v-if="screenShareState.region && (screenShareState.selecting || screenShareState.region.width>0)"
+              class="select-rect"
+              :style="{
+                left: screenShareState.region.x + 'px',
+                top: screenShareState.region.y + 'px',
+                width: screenShareState.region.width + 'px',
+                height: screenShareState.region.height + 'px',
+                display: screenShareState.region.width>0 && screenShareState.region.height>0 ? 'block' : 'none'
+              }"
+            ></div>
           </div>
-          <div v-if="activeTool.name === '直播'">
+          <!-- <div v-if="activeTool.name === '直播'">
             <i class="fa-solid fa-video fa-3x tool-icon"></i>
             <button class="action-button" @click="startLiveStream">开启直播</button>
-          </div>
+          </div> -->
           <div v-if="activeTool.name === '选人'">
             <i class="fa-solid fa-user fa-3x tool-icon"></i>
             <button class="action-button" @click="randomSelectStudent">随机抽人</button>
@@ -135,6 +139,21 @@ const router = useRouter();
 const showDropdown = ref(false);
 const activeTool = ref(null);
 const selectedStudent = ref('');
+const isSelecting = ref(false);
+const areaSelecting = ref(false);
+const selectedArea = ref(null);
+const startX = ref(0);
+const startY = ref(0);
+const currentX = ref(0);
+const currentY = ref(0);
+const screenShareState = ref({
+  selecting: false, // 是否正在选择区域
+  region: null,     // {x, y, width, height}
+  start: null,      // 鼠标按下起点
+  stream: null      // 屏幕共享流
+});
+
+const overlayRef = ref(null);
 
 // 获取用户信息
 const Name = computed(() => localStorage.getItem('Name'));   
@@ -143,9 +162,9 @@ console.log(Name.value, userAvatar.value);
 
 // 教学工具数组
 const tools = [
-  { name: '发签到', icon: 'fa-solid fa-calendar-check' },
+  // { name: '发签到', icon: 'fa-solid fa-calendar-check' },
   { name: '投屏', icon: 'fa-solid fa-tv' },
-  { name: '直播', icon: 'fa-solid fa-video' },
+  // { name: '直播', icon: 'fa-solid fa-video' },
   { name: '选人', icon: 'fa-solid fa-user' }
 ];
 
@@ -169,8 +188,64 @@ const closeTool = () => {
   activeTool.value = null;
 };
 
-const startScreenShare = () => {
-  alert('投屏已开启');
+const startSelectRegion = () => {
+  screenShareState.value.selecting = true;
+  screenShareState.value.region = null;
+  screenShareState.value.start = null;
+};
+
+const onOverlayMouseDown = (e) => {
+  if (!screenShareState.value.selecting) return;
+  const rect = overlayRef.value.getBoundingClientRect();
+  screenShareState.value.start = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+  screenShareState.value.region = { x: 0, y: 0, width: 0, height: 0 };
+  window.addEventListener('mousemove', onOverlayMouseMove);
+  window.addEventListener('mouseup', onOverlayMouseUp);
+};
+
+const onOverlayMouseMove = (e) => {
+  if (!screenShareState.value.selecting || !screenShareState.value.start) return;
+  const rect = overlayRef.value.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const sx = screenShareState.value.start.x;
+  const sy = screenShareState.value.start.y;
+  screenShareState.value.region = {
+    x: Math.min(sx, x),
+    y: Math.min(sy, y),
+    width: Math.abs(x - sx),
+    height: Math.abs(y - sy)
+  };
+};
+
+const onOverlayMouseUp = () => {
+  window.removeEventListener('mousemove', onOverlayMouseMove);
+  window.removeEventListener('mouseup', onOverlayMouseUp);
+  screenShareState.value.selecting = false;
+};
+
+const startScreenShare = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    screenShareState.value.stream = stream;
+    alert('投屏已开启！');
+    // 可在此处将 stream 传递给 video 元素或后续逻辑
+  } catch (err) {
+    alert('投屏失败: ' + err.message);
+  }
+};
+
+const resetScreenShare = () => {
+  screenShareState.value.region = null;
+  screenShareState.value.selecting = false;
+  screenShareState.value.start = null;
+  if (screenShareState.value.stream) {
+    screenShareState.value.stream.getTracks().forEach(t => t.stop());
+    screenShareState.value.stream = null;
+  }
 };
 
 const startLiveStream = () => {
@@ -188,6 +263,43 @@ const confirmCheckIn = () => {
 
 const confirmSelection = () => {
   alert(`选中的学生: ${selectedStudent.value}`);
+};
+
+const startAreaSelection = () => {
+  isSelecting.value = true;
+  areaSelecting.value = true;
+  selectedArea.value = null;
+  startX.value = 0;
+  startY.value = 0;
+  currentX.value = 0;
+  currentY.value = 0;
+};
+
+const onAreaMouseDown = (e) => {
+  if (!areaSelecting.value) return;
+  startX.value = e.clientX;
+  startY.value = e.clientY;
+  currentX.value = e.clientX;
+  currentY.value = e.clientY;
+};
+
+const onAreaMouseMove = (e) => {
+  if (!areaSelecting.value) return;
+  currentX.value = e.clientX;
+  currentY.value = e.clientY;
+};
+
+const onAreaMouseUp = () => {
+  if (!areaSelecting.value) return;
+  isSelecting.value = false;
+  areaSelecting.value = false;
+  const width = Math.abs(currentX.value - startX.value);
+  const height = Math.abs(currentY.value - startY.value);
+  selectedArea.value = { width, height };
+};
+
+const resetArea = () => {
+  selectedArea.value = null;
 };
 </script>
 
@@ -558,5 +670,31 @@ const confirmSelection = () => {
 
 .blurred {
   filter: blur(5px);
+}
+
+/* 投屏区域选择样式 */
+.area-select-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 250;
+  cursor: crosshair;
+}
+
+.area-select-rect {
+  position: absolute;
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+}
+
+.select-rect {
+  position: fixed;
+  border: 2px dashed #4e6f82;
+  background: rgba(123,175,203,0.08);
+  pointer-events: none;
+  z-index: 9999;
 }
 </style>

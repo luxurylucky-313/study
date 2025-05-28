@@ -390,13 +390,14 @@ const handlePageChange = (page) => {
 }
 
 .search-btn {
+   padding: 10px 20px;
   background-color: #bfdbea;
   border: none;
-  color: white;
-  padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  color: white;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
 }
 
 .search-btn:hover {
@@ -404,17 +405,18 @@ const handlePageChange = (page) => {
 }
 
 .add-btn {
-  background-color: #4CAF50;
-  color: white;
+  padding: 5px 20px;
+  background-color: #bfdbea;
   border: none;
-  padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  color: white;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
 }
 
 .add-btn:hover {
-  background-color: #45a049;
+  background-color: #d9eaf3;
 }
 
 .assignment-list {
@@ -630,12 +632,12 @@ const handlePageChange = (page) => {
 }
 
 .submit-btn {
-  background-color: #4CAF50;
+  background-color: #bfdbea;
   color: white;
 }
 
 .submit-btn:hover {
-  background-color: #45a049;
+  background-color:  #45a7dc;
 }
 
 .assignment-actions {
@@ -654,15 +656,15 @@ const handlePageChange = (page) => {
 }
 
 .action-btn.edit {
-  background-color: #4CAF50;
+  background-color: #68c35e;
 }
 
 .action-btn.status {
-  background-color: #2196F3;
+  background-color: #62a4da;
 }
 
 .action-btn.delete {
-  background-color: #f44336;
+  background-color: #d75250;
 }
 
 .action-btn:hover {

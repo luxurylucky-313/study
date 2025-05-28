@@ -5,7 +5,7 @@
       <div class="login-left">
         <h3>智慧校园学习平台</h3>
         <p>知识 · 互动 · 成长</p>
-        <div class="role-selector">
+        <!-- <div class="role-selector">
           <label class="role-option">
             <input type="checkbox" v-model="roles" value="student" />
             <span class="role-text">学生</span>
@@ -14,7 +14,7 @@
             <input type="checkbox" v-model="roles" value="teacher" />
             <span class="role-text">教师</span>
           </label>
-        </div>
+        </div> -->
       </div>
       <div class="login-right">
         <div class="login-box">
@@ -48,9 +48,6 @@
               登录
             </button>
           </form>
-          <div class="login-footer">
-            <p>还没有账号？<router-link to="/register">立即注册</router-link></p>
-          </div>
         </div>
       </div>
     </div>

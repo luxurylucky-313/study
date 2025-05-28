@@ -147,7 +147,7 @@ const submitForm = async () => {
                 v-model="searchAll"
                 @change="searchCourses"
               />
-              <span>搜索所有课程</span>
+              <span>查看所有课程</span>
             </label>
             <button @click="searchCourses" class="search-btn">查询</button>
           </div>
@@ -343,7 +343,7 @@ h1 {
 }
 .create-btn {
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #bfdbea;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -352,7 +352,7 @@ h1 {
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #45a049;
+    background-color: #d9eaf3;
   }
 }
 
@@ -373,8 +373,14 @@ h1 {
 }
 
 .cancel-btn {
-  background-color: #f5f5f5;
+  padding: 10px 20px;
+  background-color: #d7dbdb;
   color: #666;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
   
   &:hover {
     background-color: #e8e8e8;
@@ -382,11 +388,17 @@ h1 {
 }
 
 .confirm-btn {
-  background-color: #4CAF50;
+  padding: 10px 20px;
+  background-color: #bfdbea;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
   color: white;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
   
   &:hover {
-    background-color: #45a049;
+    background-color: #679ec6;
   }
 }
 

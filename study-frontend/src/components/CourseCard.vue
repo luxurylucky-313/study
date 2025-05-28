@@ -75,9 +75,7 @@ const deleteCourse = async (event) => {
         class="course-image"
         @error="handleImageError"
       />
-      <button class="delete-btn" @click="deleteCourse">
-        <i class="el-icon-delete">删除</i>
-      </button>
+      
     </div>
     <div class="course-content">
       <h3 class="course-title">{{ course.courseName }}</h3>
@@ -98,6 +96,9 @@ const deleteCourse = async (event) => {
           <span class="label">描述：</span>
           <span>{{ course.description || '暂无描述' }}</span>
         </p>
+        <button class="delete-btn" @click="deleteCourse">
+        <i class="el-icon-delete">删除</i>
+      </button>
       </div>
     </div>
   </div>
@@ -157,4 +158,15 @@ const deleteCourse = async (event) => {
   color: #718096;
   line-height: 1.5;
 }
+.delete-btn { 
+  padding: 5px 15px;
+  background-color: #bfdbea;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
 </style>

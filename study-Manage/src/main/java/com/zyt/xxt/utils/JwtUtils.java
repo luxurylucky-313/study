@@ -6,28 +6,35 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class JwtUtils {
 
-    // 密钥建议使用更安全的 Key 类型，并可从配置文件加载
     private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     private long expiration = 86400000; // 24小时
 
-    // 生成token
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     public String generateToken(String username) {
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setSubject(username)
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(secretKey)
                 .compact();
+
+
+        redisTemplate.opsForValue().set("token:" + username, token, expiration, TimeUnit.MILLISECONDS);
+        return token;
     }
 
-    // 解析token并返回完整 Claims
     public Claims parseToken(String token) {
         try {
             return Jwts.parserBuilder()
@@ -36,13 +43,22 @@ public class JwtUtils {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (JwtException e) {
-            // 可记录日志或处理异常
             throw new IllegalArgumentException("无效的 Token", e);
         }
     }
 
-    // 若需要获取用户名，单独提供方法
     public String getUsernameFromToken(String token) {
         return parseToken(token).getSubject();
+    }
+
+    public boolean validateToken(String token, String username) {
+        String cachedToken = (String) redisTemplate.opsForValue().get("token:" + username);
+        return token.equals(cachedToken) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        Claims claims = parseToken(token);
+        Date expiration = claims.getExpiration();
+        return expiration.before(new Date());
     }
 }

@@ -322,12 +322,12 @@ const handleDeleteQuestion = async (questionId) => {
 }
 
 .back-btn {
-  background-color: #2196F3;
+  background-color: #62a4da;
   color: white;
 }
 
 .delete-all-btn {
-  background-color: #f44336;
+  background-color: #d75250;
   color: white;
 }
 
@@ -367,7 +367,7 @@ const handleDeleteQuestion = async (questionId) => {
 }
 
 .add-question-btn {
-  background-color: #4CAF50;
+  background-color: #68c35e;
   color: white;
   border: none;
   padding: 8px 16px;
