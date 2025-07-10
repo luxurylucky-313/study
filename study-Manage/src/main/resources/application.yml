@@ -34,8 +34,8 @@ spring:
 #自定义的阿里云OSS配置信息
 aliyun:
   oss:
-    endpoint: oss-cn-hangzhou.aliyuncs.com
-    accessKeyId: LTAI5tBHSR2H6sAe9k2QfFSp
-    accessKeySecret: Fxc3AUqbfQn3p57F7GPpqPMnBLkM90
-    bucketName: luxurylucky
+    endpoint: 
+    accessKeyId:
+    accessKeySecret:
+    bucketName:
 
